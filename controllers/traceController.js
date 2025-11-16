@@ -130,12 +130,13 @@ exports.searchTrace = async (req, res) => {
         // ============================================================
         // 🔥 엑셀 정보 + 농장 평균 등급
         let excelInfo = {};
+        var farmId;
         if (farmCodes) {
             excelInfo = farmCodes[r.traceNo] || {};
         }
 
         if (excelInfo && excelInfo.farmId) {
-            const farmId = excelInfo.farmId;
+            farmId = excelInfo.farmId;
             const avgInfo = farmAvg ? farmAvg[farmId] : null;
 
             if (avgInfo) {
@@ -154,16 +155,22 @@ exports.searchTrace = async (req, res) => {
                 </div>
                 `;
             }
+        }else{
+            html += `
+                <div class="trace-item" style="background:#fff3cd;">
+                    평균 등급 데이터 없음
+                </div>
+                `;
         }
+        
         // ============================================================
 
-        if (r.error) {
+        if(r.error) {
             html += `<p style="color:red;">오류: ${r.error}</p>`;
         } else {
             r.data.forEach(item => {
                 let infoClass = `infoType${item.infoType}`;
                 html += `<div class="trace-item ${infoClass}">`;
-
                 switch(item.infoType) {
                     case 1:
                         html += `<strong>출생일:</strong> ${formatDate(item.birthYmd)}, <strong>소 번호:</strong> ${item.cattleNo}`;
