@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f6fa;
+    padding: 30px;
+}
+
+.container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    width: 350px;
+    height: 400px;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
+    justify-items: center;
+    
+}
+
+
+mainForm {
+    width: 95% !important;
+    height: 80% !important;
+    box-sizing: border-box;
+
+}
+
+.mainForm button {
+    width: 800px !important;
+}
+
+
+
+.card h3 {
+    margin-top: 0;
+    color: #444;
+}
+
+textarea {
+    width: 100%;
+    height: 80%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    resize: none;
+    font-size: 14px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #4a90e2;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #3b78c4;
+}
+
+input[type="file"] {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+h2 {
+    margin-bottom: 20px;
+}

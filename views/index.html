@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>이력번호 조회</title>
+</head>
+<body>
+
+<h2>🐮 다중 이력번호 조회</h2>
+
+<form class="mainForm" action="/search" method="POST" enctype="multipart/form-data">
+    <div>
+    <div class="container">
+        <div class="card">
+            <h3>1) 이력번호 입력</h3>
+            <p>한 줄에 하나씩 입력하세요.</p>
+<textarea class="textarea" name="traceNos" placeholder="예: 222222222222&#10;333333333333" required>
+002158984328
+002163885126
+</textarea>
+        </div>
+
+        <div class="card">
+            <h3>2) 데이터 선택 (.xlsx)</h3>
+            <p>엑셀 파일을 선택하세요.</p>
+            <input type="file" name="excelFile"/>
+        </div>
+    </div>
+         <button type="submit">조회</button>
+    </div>
+ </form>
+      
+
+</body>
+</html>
+
+<script>
+const form = document.querySelector("form");
+form.addEventListener("submit", (e) => {
+    const textarea = form.traceNos.value.trim();
+    const lines = textarea.split(/\r?\n/);
+
+    for (const [i, line] of lines.entries()) {
+        if (!/^\d{12}$/.test(line)) {
+            e.preventDefault();
+            alert(`라인 ${i + 1}번: 12자리 숫자만 입력 가능합니다!`);
+            return;
+        }
+    }
+});
+</script>
