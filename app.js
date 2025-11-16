@@ -4,20 +4,24 @@ const path = require("path");
 const traceRoute = require("./routes/traceRoute");
 
 const app = express();
-app.use(express.static("public"));
-const PORT = process.env.PORT || 3000;
 
-// POST 폼 데이터 받기
+// 폼 데이터 받기
 app.use(express.urlencoded({ extended: true }));
 
-// 정적 파일 경로 설정 (views 폴더 내 HTML 사용)
-app.use(express.static(path.join(__dirname, "views")));
+// 정적 파일 제공 (CSS, JS)
+app.use(express.static(path.join(__dirname, "public")));
 
-// 라우트 등록
+// 메인 HTML 라우팅 (이력번호 입력 화면)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "index.html"));
+});
+
+// API 라우트
 app.use("/", traceRoute);
 
-// 서버 실행
+// Render 서버 포트
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-const PORT = 3000;
-  console.log(`✅ 서버 실행 중: http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
