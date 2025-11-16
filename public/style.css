@@ -31,7 +31,8 @@ mainForm {
 }
 
 .mainForm button {
-    width: 800px !important;
+    width: 400px;
+    /* width: 800px !important; */
 }
 
 

@@ -31,7 +31,7 @@ function getAverageGradeByFarm(farmCodes) {
 
     // 1) 농장별 배열 그룹 만들기
     Object.values(farmCodes).forEach(item => {
-        const farmId = item.farmId?.trim();
+        const farmId = item.farmId
         if (!farmId) return;
 
         const numGrade = gradeToNumber(item.grade);

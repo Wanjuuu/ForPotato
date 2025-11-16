@@ -1,21 +1,24 @@
-    const axios = require("axios");
-    const { formatDate, readFarmCodesFromExcel, getAverageGradeByFarm } = require("../utils/util");
-    const XLSX = require('xlsx');
+const axios = require("axios");
+const path = require("path");
+const { formatDate, readFarmCodesFromExcel, getAverageGradeByFarm } = require("../utils/util");
 
-    exports.searchTrace = async (req, res) => {
-        const traceNosInput = req.body.traceNos;
-        const traceNos = traceNosInput.split(/\r?\n/).map(t => t.trim()).filter(t => t);
-        const validTraceNos = traceNos.filter(t => /^\d{12}$/.test(t));
+exports.searchTrace = async (req, res) => {
+    const traceNosInput = req.body.traceNos;
+    const traceNos = traceNosInput
+        .split(/\r?\n/)
+        .map(t => t.replace(/\s+/g, "")) // 혹시 모를 공백 제거
+        .filter(t => t);
 
+    const validTraceNos = traceNos.filter(t => /^\d{12}$/.test(t));
 
-        if (validTraceNos.length === 0) {
-            return res.send("⚠️ 12자리 숫자가 아닌 이력번호가 포함되어 있습니다.");
-        }
+    if (validTraceNos.length === 0) {
+        return res.send("⚠️ 12자리 숫자가 아닌 이력번호가 포함되어 있습니다.");
+    }
 
-        const baseUrl = "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch";
-        const serviceKey = "73d8164a411c22a772509a24eefe161f0ac31c9f1712b0d6dd0eb2d96d568444";
+    const baseUrl = "http://data.ekape.or.kr/openapi-data/service/user/animalTrace/traceNoSearch";
+    const serviceKey = "73d8164a411c22a772509a24eefe161f0ac31c9f1712b0d6dd0eb2d96d568444";
 
-        const results = [];
+    const results = [];
 
     for (const traceNo of traceNos) {
         try {
@@ -23,38 +26,45 @@
                 params: { traceNo, serviceKey }
             });
 
-
-
-            results.push({ traceNo, data: response.data.response?.body?.items?.item || [], error: null });
+            results.push({
+                traceNo,
+                data: response.data.response?.body?.items?.item || [],
+                error: null
+            });
         } catch (error) {
             results.push({ traceNo, data: null, error: error.message });
         }
     }
 
-    // 여기서 필터링
+    // infoType=2 는 도축출하만 남기기
     results.forEach(item => {
+        if (!item.data) return;
         item.data = item.data.filter(i => {
             if (i.infoType === 2) {
-                return i.regType === '도축출하';
+                return i.regType === "도축출하";
             }
             return true;
         });
     });
 
-    if (req.file && req.file.path) {
-        var farmCodes = readFarmCodesFromExcel(req.file.path);
-        var farmAvg = getAverageGradeByFarm(farmCodes);
+    // 🔥 여기서부터: 업로드 파일 대신 public/farmData.xlsx 사용
+    let farmCodes = {};
+    let farmAvg = {};
 
-        // 기존 results 를 순회하면서 엑셀 데이터 병합
+    try {
+        const excelPath = path.join(__dirname, "..", "public", "farmData.xlsx");
+        farmCodes = readFarmCodesFromExcel(excelPath);       // { traceNo: { grade, farmId } }
+        farmAvg = getAverageGradeByFarm(farmCodes);          // { farmId: { avgGrade, count, avgNumber } }
+
+        // results 에 엑셀 데이터 매핑
         results.forEach(item => {
-            const excelInfo = farmCodes[item.traceNo];  // { grade, farmId }
+            const excelInfo = farmCodes[item.traceNo];        // { grade, farmId }
             item.excel = excelInfo || null;
         });
+    } catch (e) {
+        console.error("엑셀(farmData.xlsx) 읽기 오류:", e.message);
     }
-    
 
-
-    // 결과 HTML 생성
     // 결과 HTML 생성
     let html = `
     <html>
@@ -114,18 +124,18 @@
     results.forEach(r => {
         html += `<div class="trace-card">`;
         html += `<h3>이력번호: ${r.traceNo}</h3>`;
-    
+
         // ============================================================
-        // 🔥 엑셀 정보 가져오기
-        var excelInfo = {};
-        if(farmCodes){
+        // 🔥 엑셀 정보 + 농장 평균 등급
+        let excelInfo = {};
+        if (farmCodes) {
             excelInfo = farmCodes[r.traceNo] || {};
         }
-    
+
         if (excelInfo && excelInfo.farmId) {
-            var farmId = excelInfo.farmId;
-            var avgInfo = farmAvg[farmId]; // 미리 계산한 농장별 평균등급
-    
+            const farmId = excelInfo.farmId;
+            const avgInfo = farmAvg ? farmAvg[farmId] : null;
+
             if (avgInfo) {
                 html += `
                 <div class="trace-item" style="background:#e8f5e9;">
@@ -144,58 +154,47 @@
             }
         }
         // ============================================================
-    
+
         if (r.error) {
             html += `<p style="color:red;">오류: ${r.error}</p>`;
         } else {
-    
-            // 🔥 실제 API 이력 데이터 출력
             r.data.forEach(item => {
                 let infoClass = `infoType${item.infoType}`;
                 html += `<div class="trace-item ${infoClass}">`;
-    
+
                 switch(item.infoType) {
                     case 1:
                         html += `<strong>출생일:</strong> ${formatDate(item.birthYmd)}, <strong>소 번호:</strong> ${item.cattleNo}`;
                         break;
-    
                     case 2:
                         html += `<strong>농장주소:</strong> ${item.farmAddr}, <strong>농장주:</strong> ${item.farmerNm}, <strong>등록타입:</strong> ${item.regType}`;
                         break;
-    
                     case 3:
                         html += `<strong>도축장:</strong> ${item.butcheryPlaceNm}, 
                                  <strong>주소:</strong> ${item.butcheryPlaceAddr}, 
                                  <strong>도축일:</strong> ${formatDate(item.butcheryYmd)}, 
                                  <strong>등급:</strong> ${item.gradeNm}`;
                         break;
-    
                     case 4:
                         html += `<strong>가공장:</strong> ${item.processPlaceNm}, <strong>주소:</strong> ${item.processPlaceAddr}`;
                         break;
-    
                     case 5:
                         html += `<strong>백신 정보:</strong> ${item.vaccineorder}, <strong>접종일:</strong> ${formatDate(item.injectionYmd)}`;
                         break;
-    
                     case 7:
                         html += `<strong>검사일:</strong> ${formatDate(item.inspectDt)}, <strong>결과:</strong> ${item.inspectYn}, <strong>TBC:</strong> ${item.tbcInspctRsltNm}`;
                         break;
-    
                     default:
                         html += JSON.stringify(item);
                 }
-    
+
                 html += `</div>`; // trace-item
             });
         }
-    
+
         html += `</div>`; // trace-card
     });
 
-
     html += `</body></html>`;
-
     res.send(html);
-    };
-
+};
