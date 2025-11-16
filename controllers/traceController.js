@@ -65,6 +65,8 @@ exports.searchTrace = async (req, res) => {
         console.error("엑셀(farmData.xlsx) 읽기 오류:", e.message);
     }
 
+
+    
     // 결과 HTML 생성
     let html = `
     <html>
