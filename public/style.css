@@ -152,3 +152,38 @@ input[type="file"] {
         text-align: left;
     }
 }
+
+/* ===============================
+   Loading Overlay
+================================ */
+#loadingOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 9999;
+}
+
+#loadingOverlay p {
+    margin-top: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #444;
+}
+
+/* Spinner */
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #4a90e2;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

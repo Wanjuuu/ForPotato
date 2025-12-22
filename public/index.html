@@ -28,26 +28,57 @@
          <button type="submit">조회</button>
     </div>
  </form>
-      
+<!-- 로딩 오버레이 -->
+<div id="loadingOverlay">
+    <div class="loader"></div>
+    <p>조회 중입니다…</p>
+</div>
 
 </body>
 </html>
 
 <script>
-const form = document.querySelector("form");
-form.addEventListener("submit", (e) => {
-    const textarea = form.traceNos.value.trim();
-    const lines = textarea.split(/\r?\n/);
+    const form = document.querySelector("form");
 
-    for (const [i, line] of lines.entries()) {
-        const cleaned = line.replace(/\s+/g, ""); // 공백 제거
+    form.addEventListener("submit", (e) => {
+        const textarea = form.traceNos.value.trim();
+        const lines = textarea.split(/\r?\n/);
 
-        if (!/^\d{12}$/.test(cleaned)) {
-            e.preventDefault();
-            alert(`라인 ${i + 1}번: 공백 제외 12자리 숫자만 입력 가능합니다!`);
-            return;
+        for (const [i, line] of lines.entries()) {
+            const cleaned = line.replace(/\s+/g, ""); // 공백 제거
+
+            if (!/^\d{12}$/.test(cleaned)) {
+                e.preventDefault();
+                alert(`라인 ${i + 1}번: 공백 제외 12자리 숫자만 입력 가능합니다!`);
+                return;
+            }
         }
+
+        // ✅ 여기까지 왔다는 건: 유효성 통과
+        // 👉 로딩 표시
+        const overlay = document.getElementById("loadingOverlay");
+        if (overlay) {
+            overlay.style.display = "flex";
+        }
+
+        // 버튼 중복 클릭 방지 (선택)
+        const btn = form.querySelector("button");
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = "조회 중...";
+        }
+    });
+    
+    window.addEventListener("pageshow", function () {
+    const overlay = document.getElementById("loadingOverlay");
+    if (overlay) {
+        overlay.style.display = "none";
     }
 
+    const btn = document.querySelector("form button");
+    if (btn) {
+        btn.disabled = false;
+        btn.innerText = "조회하기";
+    }
 });
 </script>
