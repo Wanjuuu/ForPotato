@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>이력번호 조회</title>
     <link rel="stylesheet" href="style.css">
-<meta charset="UTF-8">
-<title>이력번호 조회</title>
 </head>
 <body>
 
@@ -39,11 +40,14 @@ form.addEventListener("submit", (e) => {
     const lines = textarea.split(/\r?\n/);
 
     for (const [i, line] of lines.entries()) {
-        if (!/^\d{12}$/.test(line)) {
+        const cleaned = line.replace(/\s+/g, ""); // 공백 제거
+
+        if (!/^\d{12}$/.test(cleaned)) {
             e.preventDefault();
-            alert(`라인 ${i + 1}번: 12자리 숫자만 입력 가능합니다!`);
+            alert(`라인 ${i + 1}번: 공백 제외 12자리 숫자만 입력 가능합니다!`);
             return;
         }
     }
+
 });
 </script>
