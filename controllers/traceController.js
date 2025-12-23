@@ -58,8 +58,9 @@ exports.searchTrace = async (req, res) => {
 
         // results 에 엑셀 데이터 매핑
         results.forEach(item => {
-            const excelInfo = farmCodes[item.traceNo];        // { grade, farmId }
+            const excelInfo = farmAvg[item.data[0].farmUniqueNo];        // { grade, farmId }
             item.excel = excelInfo || null;
+            item.farmUniqueNo = item.data[0].farmUniqueNo
         });
     } catch (e) {
         console.error("엑셀(farmData.xlsx) 읽기 오류:", e.message);
@@ -207,18 +208,17 @@ results.forEach(r => {
 
     // ============================================================
     // 엑셀 정보 + 농장 평균 등급
-    let excelInfo = farmCodes ? farmCodes[r.traceNo] : null;
+    let excelInfo = r.excel ? r.excel : null;
 
-    if (excelInfo && excelInfo.farmId) {
-        const farmId = excelInfo.farmId;
-        const avgInfo = farmAvg ? farmAvg[farmId] : null;
+    if (excelInfo && r.farmUniqueNo) {
+        const farmId = r.farmUniqueNo;
 
-        if (avgInfo) {
+        if (excelInfo) {
             html += `
             <div class="trace-item" style="background:#e8f5e9;">
                 <strong>농장식별번호</strong>${farmId}
-                <strong>평균 등급</strong>${avgInfo.avgGrade}
-                <span style="color:#888;">(${avgInfo.count}두 기준)</span>
+                <strong>평균 등급</strong>${excelInfo.avgGrade}
+                <span style="color:#888;">(${excelInfo.count}두 기준)</span>
             </div>
             `;
         } else {
